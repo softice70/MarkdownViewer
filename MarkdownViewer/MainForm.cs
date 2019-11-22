@@ -16,12 +16,28 @@ namespace MarkdownViewer
         private bool _changed = false;
         public const string TITLE = "MarkdownViewer";
 
-        public MainForm(string file)
+        public MainForm(string file, bool isHideEdit)
         {
+            AllowDrop = true;
             InitializeComponent();
             initEdit();
             if (file != null)
                 openFile(file);
+            _splitContainer.Panel1Collapsed = isHideEdit;
+            _view.AllowWebBrowserDrop = true;
+            _edit.AllowDrop = true;
+            _edit.DragEnter += (sender, e) =>
+            {
+                if (e.Data.GetDataPresent(DataFormats.FileDrop)){
+                    e.Effect = DragDropEffects.Link;
+                }else{
+                    e.Effect = DragDropEffects.None;
+                }
+            };
+            _edit.DragDrop += (sender, e) =>
+            {
+                this.openFile(((System.Array)e.Data.GetData(DataFormats.FileDrop)).GetValue(0).ToString());
+            };
         }
         private void initEdit()
         {
@@ -33,6 +49,7 @@ namespace MarkdownViewer
                 tabs[i] = w * (i + 1);
             _edit.SelectionTabs = tabs;
         }
+
         private void newFile()
         {
             if (!checkCanCloseFile())
@@ -45,19 +62,21 @@ namespace MarkdownViewer
             setChanged(false);
         }
 
-        private bool _loading = false;
-        private void openFile(string file)
+        public void openFile(string file)
         {
             if (!checkCanCloseFile())
                 return;
-            _file = file;
-            string content = File.ReadAllText(file);
-            
-            _loading = true;
-            resetAll(content);
-            _loading = false;
+            try {
+                _file = file;
+                string content = File.ReadAllText(file);
 
-            setChanged(false);
+                _ignoreFirstChanged = true;
+                resetAll(content);
+
+                setChanged(false);
+            } catch (Exception e) {
+                MessageBox.Show(e.Message);
+            }
         }
         private void setChanged(bool changed = true)
         {
@@ -86,7 +105,7 @@ namespace MarkdownViewer
                 _view.CssText = _strCss;
             }
 
-            _view.MdText = content;
+            _view.resetView(content);
         }
         private void resetAll(string content)
         {
@@ -154,16 +173,14 @@ namespace MarkdownViewer
             saveCurrFile();
         }
 
-        private bool _firstChanged = true; //system invoke
+        private bool _ignoreFirstChanged = true; //system invoke or openfile invoke
         private void _edit_TextChanged(object sender, EventArgs e)
         {
-            if (_firstChanged)
+            if (_ignoreFirstChanged)
             {
-                _firstChanged = false;
+                _ignoreFirstChanged = false;
                 return;
             }
-            if (_loading)
-                return;
             resetView(_edit.Text);
             setChanged();
         }
@@ -177,7 +194,7 @@ namespace MarkdownViewer
         {
             showOrHideEdit();
         }
-        private string STR_ABOUT = "#MarkdownViewer v1.0\nProject:<https://github.com/jijinggang/MarkdownViewer>\n##Author\njijinggang@gmail.com\n##Copyright\nFree For All";
+        private string STR_ABOUT = "#MarkdownViewer v1.1\nProject:<https://github.com/jijinggang/MarkdownViewer>\n##Author\njijinggang@gmail.com\n##Copyright\nFree For All";
         private void aboutMenuItem_Click(object sender, EventArgs e)
         {
             resetView(STR_ABOUT);

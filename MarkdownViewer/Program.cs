@@ -13,22 +13,29 @@ namespace MarkdownViewer
         [STAThread]
 		static void Main(string[] args)
 		{
-			string file = null;
-			if (args.Length > 0)
-			{
-				file = args[0];
-			}
-			else
-			{
-#if DEBUG
-				file = "sample.md";
-#endif
-			}
-			//if (!checkDefaultProgram(file))
-			//	return;
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm(file));
+            string file = null;
+            bool isArgsValid = true;
+            HashSet<String> options = new HashSet<String>();
+            foreach (String arg in args){
+                if (arg.StartsWith("-")){
+                    options.Add(arg.Substring(1).ToLower());
+                }else{
+                    if (file == null){
+                        file = arg;
+                    }else{
+                        MessageBox.Show("Usage:\r\n\tMarkdownViewer.exe [-v] file");
+                        isArgsValid = false;
+                    }
+                }
+            }
+            if (isArgsValid) {
+                //if (!checkDefaultProgram(file))
+                //	return;
+                bool isHideEdit = options.Contains("v");
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(new MainForm(file, isHideEdit));
+            }
         }
         private static bool checkDefaultProgram(string param)
         {

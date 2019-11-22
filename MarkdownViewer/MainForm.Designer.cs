@@ -42,7 +42,7 @@
             this.aboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this._splitContainer = new System.Windows.Forms.SplitContainer();
             this._edit = new System.Windows.Forms.RichTextBox();
-            this._view = new MarkdownViewer.MdBrowser();
+            this._view = new MarkdownViewer.MdBrowser(this);
             this.menuTop.SuspendLayout();
 			//((System.ComponentModel.ISupportInitialize)(this._splitContainer)).BeginInit();
             this._splitContainer.Panel1.SuspendLayout();
@@ -177,7 +177,7 @@
             this._view.CssText = null;
             this._view.Dock = System.Windows.Forms.DockStyle.Fill;
             this._view.Location = new System.Drawing.Point(0, 0);
-            this._view.MdText = null;
+            this._view.resetView(null);
             this._view.MinimumSize = new System.Drawing.Size(26, 26);
             this._view.Name = "_view";
             this._view.Size = new System.Drawing.Size(396, 549);
